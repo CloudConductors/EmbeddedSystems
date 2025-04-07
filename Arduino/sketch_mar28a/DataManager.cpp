@@ -1,72 +1,100 @@
 #include "DataManager.h"
 
-// GOOD VALUES ARE NOT ACCURATE RIGHT NOW BECAUSE THERE ARE APPARENTLY TWO TYPES OF GOOD DATA
+float tp2_mean_good = -0.012789;
+float tp3_mean_good = 9.004420;
+float h1_mean_good = 8.976129;
+float dv_pressure_mean_good = -0.020247;
+float resevoirs_mean_good = 9.005358;
+float oil_temperature_mean_good = 61.941475;
+float motor_current_mean_good = 1.348828;
+float comp_mean_good = 1.000000;
+float dv_electric_mean_good = 0.000000;
+float towers_mean_good = 1.000000;
+float mpg_mean_good = 1.000000;
+float lps_mean_good = 0.000000;
+float pressure_switch_mean_good = 1.000000;
+float oil_level_mean_good = 1.000000;
+float caudal_impulses_mean_good = 1.000000;
 
-// Good :)
-float tp2_mean_good = 1.231891;
-float tp3_mean_good = 8.998642;
-float h1_mean_good = 7.719864;
-float dv_pressure_mean_good = 0.019612;
-float resevoirs_mean_good = 8.999247;
-float oil_temperature_mean_good = 62.383127;
-float motor_current_mean_good = 1.990015;
-float comp_mean_good = 0.853729;
-float dv_electric_mean_good = 0.143803;
-float towers_mean_good = 0.928267;
-float mpg_mean_good = 0.849349;
-float lps_mean_good = 0.002999;
-float pressure_switch_mean_good = 0.991371;
-float oil_level_mean_good = 0.902237;
-float caudal_impulses_mean_good = 0.935852;
+float tp2_mean_good2 = 8.726716;
+float tp3_mean_good2 = 8.954165;
+float h1_mean_good2 = 0.149844;
+float dv_pressure_mean_good2 = 0.223303;
+float resevoirs_mean_good2 = 8.952727;
+float oil_temperature_mean_good2 = 64.818034;
+float motor_current_mean_good2 = 5.785448;
+float comp_mean_good2 = 0.000000;
+float dv_electric_mean_good2 = 1.000000;
+float towers_mean_good2 = 0.500000; // 50/50 chance of 1 or 0
+float mpg_mean_good2 = 0.000000;
+float lps_mean_good2 = 0.000000;
+float pressure_switch_mean_good2 = 1.000000;
+float oil_level_mean_good2 = 1.000000;
+float caudal_impulses_mean_good2 = 1.000000;
 
-float tp2_std_good = 3.134697;
-float tp3_std_good = 0.633844;
-float h1_std_good = 3.187576;
-float dv_pressure_std_good = 0.277235;
-float resevoirs_std_good = 0.633054;
-float oil_temperature_std_good = 6.300381;
-float motor_current_std_good = 2.270312;
-float comp_std_good = 0.353378;
-float dv_electric_std_good = 0.350890;
-float towers_std_good = 0.258045;
-float mpg_std_good = 0.357708;
-float lps_std_good = 0.054684;
-float pressure_switch_std_good = 0.092490;
-float oil_level_std_good = 0.296994;
-float caudal_impulses_std_good = 0.245016;
+float tp2_mean_bad = 8.295938;
+float tp3_mean_bad = 8.441677;
+float h1_mean_bad = -0.007271;
+float dv_pressure_mean_bad = 1.848049;
+float resevoirs_mean_bad = 8.442984;
+float oil_temperature_mean_bad = 75.447403;
+float motor_current_mean_bad = 5.587233;
+float comp_mean_bad = 0.000000;
+float dv_electric_mean_bad = 1.000000;
+float towers_mean_bad = 0.500000; // 50/50 chance of 1 or 0
+float mpg_mean_bad = 0.000000;
+float lps_mean_bad = 0.000000;
+float pressure_switch_mean_bad = 1.000000;
+float oil_level_mean_bad = 1.000000;
+float caudal_impulses_mean_bad = 1.000000;
 
-// Bad :(
-float tp2_mean_bad = 8.112334;
-float tp3_mean_bad = 8.288455;
-float h1_mean_bad = 0.041005;
-float dv_pressure_mean_bad = 1.859191;
-float resevoirs_mean_bad = 8.289944;
-float oil_temperature_mean_bad = 75.596562;
-float motor_current_mean_bad = 5.530975;
-float comp_mean_bad = 0.004805;
-float dv_electric_mean_bad = 0.994528;
-float towers_mean_bad = 0.502135;
-float mpg_mean_bad = 0.004805;
-float lps_mean_bad = 0.024291;
-float pressure_switch_mean_bad = 0.994695;
-float oil_level_mean_bad = 0.999333;
-float caudal_impulses_mean_bad = 0.999333;
+float tp2_std_good = 0.002873;
+float tp3_std_good = 0.578056;
+float h1_std_good = 0.710397;
+float dv_pressure_std_good = 0.003325;
+float resevoirs_std_good = 0.577210;
+float oil_temperature_std_good = 5.968513;
+float motor_current_std_good = 1.783266;
+float comp_std_good = 0.000000;
+float dv_electric_std_good = 0.000000;
+float towers_std_good = 0.000000;
+float mpg_std_good = 0.000000;
+float lps_std_good = 0.000000;
+float pressure_switch_std_good = 0.000000;
+float oil_level_std_good = 0.000000;
+float caudal_impulses_std_good = 0.000000;
 
-float tp2_std_bad = 0.994385;
-float tp3_std_bad = 0.495652;
-float h1_std_bad = 0.651141;
-float dv_pressure_std_bad = 0.520527;
-float resevoirs_std_bad = 0.495597;
-float oil_temperature_std_bad = 2.931860;
-float motor_current_std_bad = 0.374257;
-float comp_std_bad = 0.069151;
-float dv_electric_std_bad = 0.073772;
-float towers_std_bad = 0.500004;
-float mpg_std_bad = 0.069151;
-float lps_std_bad = 0.153954;
-float pressure_switch_std_bad = 0.072645;
-float oil_level_std_bad = 0.025825;
-float caudal_impulses_std_bad = 0.025825;
+float tp2_std_good2 = 1.866575;
+float tp3_std_good2 = 0.907349;
+float h1_std_good2 = 1.237969;
+float dv_pressure_std_good2 = 0.653763;
+float resevoirs_std_good2 = 0.906588;
+float oil_temperature_std_good2 = 7.437426;
+float motor_current_std_good2 = 0.420735;
+float comp_std_good2 = 0.000000;
+float dv_electric_std_good2 = 0.000000;
+float towers_std_good2 = 0.500000; // 50/50 chance of 1 or 0
+float mpg_std_good2 = 0.000000;
+float lps_std_good2 = 0.000000;
+float pressure_switch_std_good2 = 0.000000;
+float oil_level_std_good2 = 0.000000;
+float caudal_impulses_std_good2 = 0.000000;
+
+float tp2_std_bad = 0.863746;
+float tp3_std_bad = 0.596259;
+float h1_std_bad = 0.003422;
+float dv_pressure_std_bad = 0.481578;
+float resevoirs_std_bad = 0.595944;
+float oil_temperature_std_bad = 2.496217;
+float motor_current_std_bad = 0.204016;
+float comp_std_bad = 0.000000;
+float dv_electric_std_bad = 0.000000;
+float towers_std_bad = 0.500000; // 50/50 chance of 1 or 0
+float mpg_std_bad = 0.000000;
+float lps_std_bad = 0.000000;
+float pressure_switch_std_bad = 0.000000;
+float oil_level_std_bad = 0.000000;
+float caudal_impulses_std_bad = 0.000000;
 
 // This is an implementation of cmath's erfc function
 // https://www.johndcook.com/cpp_phi.html
@@ -133,6 +161,14 @@ float calculate_probability(int day) {
     return phi(standardized_std / sqrt(2)) / 2;  // Cumulative distribution function for a normal distribution
 }
 
+float clamp_towers(float towers) {
+    if (towers < 0.5) {
+        return 0.0;
+    }
+    
+    return 1.0;
+}
+
 void grab_random_good(Data *data) {
     data->tp2 = generate_random_value(tp2_mean_good, tp2_std_good);
     data->tp3 = generate_random_value(tp3_mean_good, tp3_std_good);
@@ -151,6 +187,24 @@ void grab_random_good(Data *data) {
     data->caudal_impulses = generate_random_value(caudal_impulses_mean_good, caudal_impulses_std_good);
 }
 
+void grab_random_good2(Data *data) {
+    data->tp2 = generate_random_value(tp2_mean_good2, tp2_std_good2);
+    data->tp3 = generate_random_value(tp3_mean_good2, tp3_std_good2);
+    data->h1 = generate_random_value(h1_mean_good2, h1_std_good2);
+    data->dv_pressure = generate_random_value(dv_pressure_mean_good2, dv_pressure_std_good2);
+    data->resevoirs = generate_random_value(resevoirs_mean_good2, resevoirs_std_good2);
+    data->oil_temperature = generate_random_value(oil_temperature_mean_good2, oil_temperature_std_good2);
+    data->motor_current = generate_random_value(motor_current_mean_good2, motor_current_std_good2);
+    data->COMP = generate_random_value(comp_mean_good2, comp_std_good2);
+    data->dv_electric = generate_random_value(dv_electric_mean_good2, dv_electric_std_good2);
+    data->towers = round(generate_random_value(towers_mean_good2, towers_std_good2));
+    data->mpg = generate_random_value(mpg_mean_good2, mpg_std_good2);
+    data->lps = generate_random_value(lps_mean_good2, lps_std_good2);
+    data->pressure_switch = generate_random_value(pressure_switch_mean_good2, pressure_switch_std_good2);
+    data->oil_level = generate_random_value(oil_level_mean_good2, oil_level_std_good2);
+    data->caudal_impulses = generate_random_value(caudal_impulses_mean_good2, caudal_impulses_std_good2);
+}
+
 void grab_random_bad(Data *data) {
     data->tp2 = generate_random_value(tp2_mean_bad, tp2_std_bad);
     data->tp3 = generate_random_value(tp3_mean_bad, tp3_std_bad);
@@ -161,7 +215,7 @@ void grab_random_bad(Data *data) {
     data->motor_current = generate_random_value(motor_current_mean_bad, motor_current_std_bad);
     data->COMP = generate_random_value(comp_mean_bad, comp_std_bad);
     data->dv_electric = generate_random_value(dv_electric_mean_bad, dv_electric_std_bad);
-    data->towers = generate_random_value(towers_mean_bad, towers_std_bad);
+    data->towers = round(generate_random_value(towers_mean_bad, towers_std_bad));
     data->mpg = generate_random_value(mpg_mean_bad, mpg_std_bad);
     data->lps = generate_random_value(lps_mean_bad, lps_std_bad);
     data->pressure_switch = generate_random_value(pressure_switch_mean_bad, pressure_switch_std_bad);
