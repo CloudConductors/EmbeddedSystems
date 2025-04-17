@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 import uuid
 import datetime
 import json
+from anomaly import anomaly_prediction
 
 dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
 table = dynamodb.Table("cc-testing")
@@ -75,7 +76,7 @@ async def main():
             continue
         data_with_timestamp = append_timestamp(data)
         if data_with_timestamp:
-            await send_to_dynamodb(data_with_timestamp)
+            await anomaly_prediction(data_with_timestamp)
         await asyncio.sleep(10)
 
 asyncio.run(main())
