@@ -15,7 +15,7 @@ def data_cleaner(unclean_data):
         embedded_json = json.loads(unclean_data)
     else:
         embedded_json = unclean_data
-    clean_data = None
+    clean_data = np.array([])
     clean_data = np.append(clean_data, embedded_json["tp2"])
     clean_data = np.append(clean_data, embedded_json["tp3"])
     clean_data = np.append(clean_data, embedded_json["h1"])
@@ -33,11 +33,7 @@ def data_cleaner(unclean_data):
     clean_data = np.append(clean_data, embedded_json["caudal_impulses"])
     return clean_data
 
-def anomaly_prediction(embedded_data):
-    #Cleaning data
-    cleaned_data = data_cleaner(embedded_data)
-
-    # Load anomally_prediction model from S3
+def download_model_from_s3():
     s3_client = boto3.client('s3')
     cloud_bucket = 'cloud-conductors'
     model_filename = 'anomaly_prediction.pkl'
@@ -47,7 +43,14 @@ def anomaly_prediction(embedded_data):
     # Load the model locally
     with open(model_filename, 'rb') as model_file:
         clf = pickle.load(model_file)
+        return clf
 
+
+def anomaly_prediction(embedded_data, clf):
+    #Cleaning data
+    cleaned_data = data_cleaner(embedded_data).reshape(1, -1)
+    print(cleaned_data, flush=True)
+   
     # Run the model
     result = clf.predict(cleaned_data)
 
@@ -58,27 +61,34 @@ def anomaly_prediction(embedded_data):
                     FilterExpression=Attr('component_id').eq('1')
                 )
         except ClientError as e:
-            return print({'error': 'ID not found'})
+            return print({'error': 'ID not found'}, flush=True)
 
         # Update Schedule
         if 'Items' in Component_Id and len(Component_Id['Items']) > 0:
             try:
+                print("Updating schedule...") #debug
                 if 'Items' in Component_Id and len(Component_Id['Items']) > 0:
+                    print("Component ID found") #debug
                     Component_Id = Component_Id['Items'][0]['component_id']
+                    print("Component ID: ", Component_Id)
                 else:
-                    return print({'error': 'Component ID not found'})
+                    return print({'error': 'Component ID not found'}, flush=True)
 
                 # Check if item exists before inserting (in case you're replacing it)
+                print(Component_Id, flush=True)
                 existing_item = schedule_table.get_item(
-                    Key={'component_id': str(Component_Id)}
+                    Key={'component_id': str(Component_Id), 'train_id': '1'} # this is a bodge, need a way to dynamically get the train_id
                 )
                 if 'Item' not in existing_item:
-                    return print({'error': 'Item not found in table'})
+                    return print({'error': 'Item not found in table'}, flush=True)
+                
 
                 # Grabbing current time for update
                 current_time = datetime.now().strftime('%m/%d/%Y')
 
                 # Perform put_item (replaces the existing item with new values)
+                # commented out until model decides to start working
+                '''
                 maintenance = schedule_table.put_item(
                     Item={
                         'component_id': str(Component_Id),
@@ -93,11 +103,12 @@ def anomaly_prediction(embedded_data):
                         
                     }
                 )
-                print("Table updated successfully!")
-                return print({'message': 'Anomaly detected, schedule updated'})
+                '''
+                print("Table updated successfully!", flush=True)
+                return print({'message': 'Anomaly detected, schedule updated'}, flush=True)
             except ClientError as e:
-                return print({'error': 'Error putting item in table'})
+                return print({'error': 'Failed to update schedule'}, flush=True)
         else:
-            print("table wasn't changed in the database!")
+            print("table wasn't changed in the database!", flush=True)
     else:
-        return print({'message': 'No anomaly detected'})
+        return print({'message': 'No anomaly detected'}, flush=True)

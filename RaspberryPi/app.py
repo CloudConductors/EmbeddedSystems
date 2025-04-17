@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 import uuid
 import datetime
 import json
-from anomaly import anomaly_prediction
+from anomaly import anomaly_prediction, download_model_from_s3
 
 dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
 table = dynamodb.Table("cc-testing")
@@ -68,6 +68,7 @@ def append_timestamp(data): # this is in json format
 
 
 async def main():
+    clf = download_model_from_s3()
     loop = asyncio.get_event_loop()
     serial_data = read_serial_data()
     while True:
@@ -76,7 +77,7 @@ async def main():
             continue
         data_with_timestamp = append_timestamp(data)
         if data_with_timestamp:
-            await anomaly_prediction(data_with_timestamp)
+            anomaly_prediction(data_with_timestamp, clf)
         await asyncio.sleep(10)
 
 asyncio.run(main())
