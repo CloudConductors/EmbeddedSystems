@@ -54,7 +54,7 @@ def anomaly_prediction(embedded_data, clf):
     # Run the model
     result = clf.predict(cleaned_data)
 
-    if result == True:
+    if result == -1:
         # Test if schedule exists
         try:
                 Component_Id = schedule_table.scan(
@@ -66,9 +66,7 @@ def anomaly_prediction(embedded_data, clf):
         # Update Schedule
         if 'Items' in Component_Id and len(Component_Id['Items']) > 0:
             try:
-                print("Updating schedule...") #debug
                 if 'Items' in Component_Id and len(Component_Id['Items']) > 0:
-                    print("Component ID found") #debug
                     Component_Id = Component_Id['Items'][0]['component_id']
                     print("Component ID: ", Component_Id)
                 else:

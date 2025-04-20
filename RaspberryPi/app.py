@@ -74,6 +74,7 @@ async def main():
     while True:
         data = next(serial_data)
         if not (data.startswith("{")):
+            print(data)
             continue
         data_with_timestamp = append_timestamp(data)
         if data_with_timestamp:
