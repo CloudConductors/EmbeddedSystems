@@ -15,6 +15,7 @@ def data_cleaner(unclean_data):
         embedded_json = json.loads(unclean_data)
     else:
         embedded_json = unclean_data
+
     clean_data = np.array([])
     clean_data = np.append(clean_data, embedded_json["tp2"])
     clean_data = np.append(clean_data, embedded_json["tp3"])
@@ -36,7 +37,7 @@ def data_cleaner(unclean_data):
 def download_model_from_s3():
     s3_client = boto3.client('s3')
     cloud_bucket = 'cloud-conductors'
-    model_filename = 'anomaly_prediction.pkl'
+    model_filename = 'anomaly_prediction.pkl' # I'm PICKLE RICK
 
     s3_client.download_file(cloud_bucket, model_filename, model_filename)
 
@@ -47,7 +48,7 @@ def download_model_from_s3():
 
 
 def anomaly_prediction(embedded_data, clf):
-    #Cleaning data
+    # Cleaning data
     cleaned_data = data_cleaner(embedded_data).reshape(1, -1)
     print(cleaned_data, flush=True)
    
@@ -61,16 +62,17 @@ def anomaly_prediction(embedded_data, clf):
                     FilterExpression=Attr('component_id').eq('1')
                 )
         except ClientError as e:
-            return print({'error': 'ID not found'}, flush=True)
+            print("Error scanning table:", e.response['Error']['Message'], flush=True)
+            return False
 
         # Update Schedule
         if 'Items' in Component_Id and len(Component_Id['Items']) > 0:
             try:
                 if 'Items' in Component_Id and len(Component_Id['Items']) > 0:
                     Component_Id = Component_Id['Items'][0]['component_id']
-                    print("Component ID: ", Component_Id)
                 else:
-                    return print({'error': 'Component ID not found'}, flush=True)
+                    print("Invalid component ID", flush=True)
+                    return False
 
                 # Check if item exists before inserting (in case you're replacing it)
                 print(Component_Id, flush=True)
@@ -78,15 +80,14 @@ def anomaly_prediction(embedded_data, clf):
                     Key={'component_id': str(Component_Id), 'train_id': '1'} # this is a bodge, need a way to dynamically get the train_id
                 )
                 if 'Item' not in existing_item:
-                    return print({'error': 'Item not found in table'}, flush=True)
+                    print("Item not found", flush=True)
+                    return False
                 
 
                 # Grabbing current time for update
                 current_time = datetime.now().strftime('%m/%d/%Y')
 
                 # Perform put_item (replaces the existing item with new values)
-                # commented out until model decides to start working
-                '''
                 maintenance = schedule_table.put_item(
                     Item={
                         'component_id': str(Component_Id),
@@ -101,12 +102,15 @@ def anomaly_prediction(embedded_data, clf):
                         
                     }
                 )
-                '''
-                print("Table updated successfully!", flush=True)
-                return print({'message': 'Anomaly detected, schedule updated'}, flush=True)
+                
+                print("Anomaly detected!", flush=True)
+                return True
             except ClientError as e:
-                return print({'error': 'Failed to update schedule'}, flush=True)
+                print("Error updating item:", e.response['Error']['Message'], flush=True)
+                return False
         else:
-            print("table wasn't changed in the database!", flush=True)
+            print("Item not found", flush=True)
+            return False
     else:
-        return print({'message': 'No anomaly detected'}, flush=True)
+        print("No anomaly detected", flush=True)
+        return False
