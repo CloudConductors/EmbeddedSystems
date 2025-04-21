@@ -7,6 +7,7 @@ import uuid
 import datetime
 import json
 from anomaly import anomaly_prediction, download_model_from_s3
+from batcher import addToBatch, sendBatch
 
 dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
 table = dynamodb.Table("cc-testing")
@@ -43,20 +44,6 @@ def read_serial_data():
         if data:
             yield data.decode("utf-8").strip()
 
-async def send_to_dynamodb(data):
-    try:
-        response = table.put_item(
-            Item={
-                "uuid": str(uuid.uuid4()),
-                "message": str(data),
-            }
-        )
-        print("Data sent to DynamoDB:", data)
-    except ClientError as e:
-        print("Error sending data to DynamoDB:", e.response["Error"]["Message"])
-    except Exception as e:
-        print("An unexpected error occurred:", str(e))
-
 def append_timestamp(data): # this is in json format
     try:
         data_dict = json.loads(data)
@@ -66,19 +53,44 @@ def append_timestamp(data): # this is in json format
         print("Error decoding JSON:", str(e))
         return None
 
+async def data_handler(data, current_size, max_size):
+    addToBatch(data)
+
+    if current_size >= max_size:
+        sendBatch()
+        return True
+    else:
+        return False
 
 async def main():
+    current_size = 0
+    max_size = 5
+
+    # Download the model from S3
     clf = download_model_from_s3()
+
+    # Main
     loop = asyncio.get_event_loop()
     serial_data = read_serial_data()
     while True:
         data = next(serial_data)
-        if not (data.startswith("{")):
-            print(data)
+        if not (data.startswith("{")): # Arduino sends notifications, don't want to parse those lol
             continue
-        data_with_timestamp = append_timestamp(data)
+
+        data_with_timestamp = append_timestamp(data) # Arduino doesn't have RTC
         if data_with_timestamp:
-            anomaly_prediction(data_with_timestamp, clf)
-        await asyncio.sleep(10)
+            if anomaly_prediction(data_with_timestamp, clf):
+                # Circumvent batcher, this is important because we need to send the data immediately
+                sendBatch()
+                print("Anomaly detected, batch sent immediately")
+                current_size = 0
+            else:
+                print(f"Current batch size: {current_size}")
+                if await data_handler(data_with_timestamp, current_size, max_size):
+                    current_size = 0
+                else:
+                    current_size += 1
+
+        await asyncio.sleep(10) # Eepy
 
 asyncio.run(main())
