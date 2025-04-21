@@ -7,6 +7,7 @@ import uuid
 import datetime
 import json
 from anomaly import anomaly_prediction, download_model_from_s3
+from network import ping_aws
 
 dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
 table = dynamodb.Table("cc-metropt3-prelearned")
@@ -18,6 +19,11 @@ def addToBatch(JSONdata):
 
 def sendBatch():
     batch_file = open('batch.txt', 'r')
+
+    # Ping AWS
+    if not ping_aws():
+        print("AWS is not reachable. Exiting...")
+        return False
 
     # AWS batcher
     with table.batch_writer() as batch:
@@ -35,3 +41,4 @@ def sendBatch():
         batch_file.write("")  # Clear the batch file after sending
 
     print("Batch sent to DynamoDB and file cleared.")
+    return True
