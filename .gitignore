@@ -3,3 +3,4 @@ env
 __pycache*
 *.csv
 .vscode
+*.pkl

@@ -165,7 +165,7 @@ float clamp_towers(float towers) {
     if (towers < 0.5) {
         return 0.0;
     }
-    
+
     return 1.0;
 }
 
@@ -197,7 +197,7 @@ void grab_random_good2(Data *data) {
     data->motor_current = generate_random_value(motor_current_mean_good2, motor_current_std_good2);
     data->COMP = generate_random_value(comp_mean_good2, comp_std_good2);
     data->dv_electric = generate_random_value(dv_electric_mean_good2, dv_electric_std_good2);
-    data->towers = round(generate_random_value(towers_mean_good2, towers_std_good2));
+    data->towers = clamp_towers(generate_random_value(towers_mean_good2, towers_std_good2));
     data->mpg = generate_random_value(mpg_mean_good2, mpg_std_good2);
     data->lps = generate_random_value(lps_mean_good2, lps_std_good2);
     data->pressure_switch = generate_random_value(pressure_switch_mean_good2, pressure_switch_std_good2);
@@ -215,7 +215,7 @@ void grab_random_bad(Data *data) {
     data->motor_current = generate_random_value(motor_current_mean_bad, motor_current_std_bad);
     data->COMP = generate_random_value(comp_mean_bad, comp_std_bad);
     data->dv_electric = generate_random_value(dv_electric_mean_bad, dv_electric_std_bad);
-    data->towers = round(generate_random_value(towers_mean_bad, towers_std_bad));
+    data->towers = clamp_towers(generate_random_value(towers_mean_bad, towers_std_bad));
     data->mpg = generate_random_value(mpg_mean_bad, mpg_std_bad);
     data->lps = generate_random_value(lps_mean_bad, lps_std_bad);
     data->pressure_switch = generate_random_value(pressure_switch_mean_bad, pressure_switch_std_bad);
