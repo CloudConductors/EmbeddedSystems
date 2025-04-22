@@ -6,6 +6,7 @@ import pickle
 import json
 import numpy as np
 from sklearn.ensemble import IsolationForest
+from network import ping_aws
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 schedule_table = dynamodb.Table('cc-metropt3-schedule')
@@ -39,7 +40,12 @@ def download_model_from_s3():
     cloud_bucket = 'cloud-conductors'
     model_filename = 'anomaly_prediction.pkl' # I'm PICKLE RICK
 
+    if ping_aws() == False:
+        print("AWS is not reachable. Trying local model...")
+        return False
+    
     s3_client.download_file(cloud_bucket, model_filename, model_filename)
+
 
     # Load the model locally
     with open(model_filename, 'rb') as model_file:
@@ -51,7 +57,7 @@ def anomaly_prediction(embedded_data, clf):
     # Cleaning data
     cleaned_data = data_cleaner(embedded_data).reshape(1, -1)
     print(cleaned_data, flush=True)
-   
+
     # Run the model
     result = clf.predict(cleaned_data)
 
@@ -88,6 +94,7 @@ def anomaly_prediction(embedded_data, clf):
                 current_time = datetime.now().strftime('%m/%d/%Y')
 
                 # Perform put_item (replaces the existing item with new values)
+
                 maintenance = schedule_table.put_item(
                     Item={
                         'component_id': str(Component_Id),

@@ -8,6 +8,8 @@ import datetime
 import json
 from anomaly import anomaly_prediction, download_model_from_s3
 from batcher import addToBatch, sendBatch
+from network import ping_aws
+import pickle
 
 dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
 table = dynamodb.Table("cc-testing")
@@ -57,22 +59,70 @@ async def data_handler(data, current_size, max_size):
     addToBatch(data)
 
     if current_size >= max_size:
-        sendBatch()
-        return True
+        if sendBatch():
+            print("Batch sent successfully")
+            return True
+        else:
+            print("Network error, batch not sent")
+            return False
     else:
         return False
+
+async def anomaly_prediction_catchup(clf, max_size):
+    # Read the last 5 lines from the batch file
+    with open('batch.txt', 'r') as batch_file:
+        lines = batch_file.readlines()[-5:]
+
+    # Process each line and check for anomalies
+    for line in lines:
+        data = line.strip()
+        if data.startswith("{"):
+            data_with_timestamp = append_timestamp(data)
+            if data_with_timestamp:
+                if anomaly_prediction(data_with_timestamp, clf):
+                    await data_handler(data_with_timestamp, max_size, max_size)
+    
+    print("Anomaly prediction catchup completed.")
+
 
 async def main():
     current_size = 0
     max_size = 5
+    outage = False
 
     # Download the model from S3
     clf = download_model_from_s3()
-
+    if clf is False:
+        file = open("anomaly_prediction.pkl", "rb")
+        if file:
+            clf = pickle.load(file)
+            file.close()
+        else:
+            print("Model not found locally. Exiting...")
+            return
+        
     # Main
     loop = asyncio.get_event_loop()
     serial_data = read_serial_data()
     while True:
+        # Check network connection
+        if not ping_aws():
+            print("Network outage detected, waiting for recovery...", flush=True)
+            outage = True
+            while outage:
+                if ping_aws():
+                    print("Network restored.", flush=True)
+                    await anomaly_prediction_catchup(clf, max_size)
+                    outage = False
+                else:
+                    data = next(serial_data)
+                    if data.startswith("{"):
+                        data_with_timestamp = append_timestamp(data)
+                        if data_with_timestamp:
+                            await data_handler(data_with_timestamp, current_size, max_size)
+                            current_size += 1
+
+
         data = next(serial_data)
         if not (data.startswith("{")): # Arduino sends notifications, don't want to parse those lol
             continue
@@ -81,7 +131,8 @@ async def main():
         if data_with_timestamp:
             if anomaly_prediction(data_with_timestamp, clf):
                 # Circumvent batcher, this is important because we need to send the data immediately
-                sendBatch()
+                current_size = max_size
+                await data_handler(data_with_timestamp, current_size, max_size) # doing it this way allows for network check
                 print("Anomaly detected, batch sent immediately")
                 current_size = 0
             else:
