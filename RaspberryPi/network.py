@@ -3,9 +3,8 @@ import socket
 def ping_aws():
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-
             s.settimeout(1)
-            s.connect(("dynamodb.us-east-1.amazonaws.com", 80))
+            s.connect(("dynamodb.us-east-1.amazonaws.com", 443))
             return True
     except socket.error:
         return False
