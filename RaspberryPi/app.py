@@ -103,10 +103,10 @@ async def data_handler(data, current_size, max_size):
     # Send batch if size exceeds max size
     if current_size >= max_size:
         if sendBatch():
-            print("Batch sent successfully")
+            print("Batch sent successfully.")
             return True
         else:
-            print("Network error, batch not sent")
+            print("Network error, batch not sent.")
             return False
     else:
         return False
@@ -146,6 +146,8 @@ async def main():
     max_size = 144 # 12 hours of data at 5 min intervals
     outage = False
 
+    print("Starting program...")
+
     # Download the model from S3
     clf = download_model_from_s3()
     if clf is False:
@@ -153,9 +155,13 @@ async def main():
         if file:
             clf = pickle.load(file)
             file.close()
+
+            print("Prediction model loaded from local file.")
         else:
-            print("Model not found locally. Exiting...")
+            print("Prediction model not found locally. Exiting...")
             return
+    else:
+        print("Prediction model downloaded from AWS S3.")
         
     # Main
     loop = asyncio.get_event_loop()
@@ -185,6 +191,8 @@ async def main():
             continue
 
         data_with_timestamp = append_timestamp(data) # Arduino doesn't have RTC
+        print("Data received.")
+        print(data_with_timestamp)
 
         # If there is data and it is a JSON string, process it
         if data_with_timestamp:
@@ -192,10 +200,10 @@ async def main():
                 # Circumvent batcher, this is important because we need to send the data immediately
                 current_size = max_size
                 await data_handler(data_with_timestamp, current_size, max_size) # doing it this way allows for network check
-                print("Anomaly detected, batch sent immediately")
+                print("Anomaly detected, batch sent immediately.")
                 current_size = 0
             else:
-                print(f"Current batch size: {current_size}")
+                print(f"Current batch size: {current_size}.")
                 if await data_handler(data_with_timestamp, current_size, max_size):
                     current_size = 0
                 else:

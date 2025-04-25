@@ -16,22 +16,6 @@ float pressure_switch_mean_good = 1.000000;
 float oil_level_mean_good = 1.000000;
 float caudal_impulses_mean_good = 1.000000;
 
-float tp2_mean_good2 = 8.726716;
-float tp3_mean_good2 = 8.954165;
-float h1_mean_good2 = 0.149844;
-float dv_pressure_mean_good2 = 0.223303;
-float resevoirs_mean_good2 = 8.952727;
-float oil_temperature_mean_good2 = 64.818034;
-float motor_current_mean_good2 = 5.785448;
-float comp_mean_good2 = 0.000000;
-float dv_electric_mean_good2 = 1.000000;
-float towers_mean_good2 = 0.500000; // 50/50 chance of 1 or 0
-float mpg_mean_good2 = 0.000000;
-float lps_mean_good2 = 0.000000;
-float pressure_switch_mean_good2 = 1.000000;
-float oil_level_mean_good2 = 1.000000;
-float caudal_impulses_mean_good2 = 1.000000;
-
 float tp2_mean_bad = 8.295938;
 float tp3_mean_bad = 8.441677;
 float h1_mean_bad = -0.007271;
@@ -63,22 +47,6 @@ float lps_std_good = 0.000000;
 float pressure_switch_std_good = 0.000000;
 float oil_level_std_good = 0.000000;
 float caudal_impulses_std_good = 0.000000;
-
-float tp2_std_good2 = 1.866575;
-float tp3_std_good2 = 0.907349;
-float h1_std_good2 = 1.237969;
-float dv_pressure_std_good2 = 0.653763;
-float resevoirs_std_good2 = 0.906588;
-float oil_temperature_std_good2 = 7.437426;
-float motor_current_std_good2 = 0.420735;
-float comp_std_good2 = 0.000000;
-float dv_electric_std_good2 = 0.000000;
-float towers_std_good2 = 0.500000; // 50/50 chance of 1 or 0
-float mpg_std_good2 = 0.000000;
-float lps_std_good2 = 0.000000;
-float pressure_switch_std_good2 = 0.000000;
-float oil_level_std_good2 = 0.000000;
-float caudal_impulses_std_good2 = 0.000000;
 
 float tp2_std_bad = 0.863746;
 float tp3_std_bad = 0.596259;

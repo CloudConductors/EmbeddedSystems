@@ -21,7 +21,7 @@ def addToBatch(JSONdata):
     """
     with open('batch.txt', 'a') as batch_file:
         batch_file.write(JSONdata + "\n")
-    print("Data added to batch:", JSONdata)
+    print("Data added to batch.")
 
 def sendBatch():
     """

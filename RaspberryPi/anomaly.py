@@ -84,7 +84,6 @@ def anomaly_prediction(embedded_data, clf):
     """
     # Cleaning data
     cleaned_data = data_cleaner(embedded_data).reshape(1, -1)
-    print(cleaned_data, flush=True)
 
     # Run the model
     result = clf.predict(cleaned_data)
@@ -147,5 +146,5 @@ def anomaly_prediction(embedded_data, clf):
             print("Item not found", flush=True)
             return False
     else:
-        print("No anomaly detected", flush=True)
+        print("No anomalies detected.", flush=True)
         return False
