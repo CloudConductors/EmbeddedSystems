@@ -11,18 +11,33 @@ from batcher import addToBatch, sendBatch
 from network import ping_aws
 import pickle
 
-dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
-table = dynamodb.Table("cc-testing")
-
 serialPort = serial.Serial(port="COM3", baudrate=9600, timeout=0)
 
-# https://github.com/pyserial/pyserial/issues/216#issuecomment-369414522
 class ReadLine:
+    """
+    A class to read lines from a serial port.
+
+    Attributes:
+        s (serial.Serial): The serial port to read from.
+    """
+
     def __init__(self, s):
+        """
+        Initializes the ReadLine class.
+
+        Parameters:
+            s (serial.Serial): The serial port to read from.
+        """
         self.buf = bytearray()
         self.s = s
     
     def readline(self):
+        """
+        Read a line from the serial port. This method will wait until a newline character is found.
+
+        Returns:
+            bytes: The line read from the serial port, including the newline character.
+        """
         i = self.buf.find(b"\n")
         if i >= 0:
             r = self.buf[:i+1]
@@ -40,14 +55,28 @@ class ReadLine:
                 self.buf.extend(data)
 
 def read_serial_data():
+    """
+    Reads serial data sent by Arduino, yields any collected data.
+    """
     reader = ReadLine(serialPort)
     while True:
         data = reader.readline()
         if data:
             yield data.decode("utf-8").strip()
 
-def append_timestamp(data): # this is in json format
+
+def append_timestamp(data):
+    """
+    Appends a timestamp to the data. 
+
+    Parameters:
+        data (str): The data to which the timestamp will be appended.
+
+    Returns:
+        str: The data with the timestamp appended in the format YYYY-MM-DD HH:MM:SS.
+    """
     try:
+        # Assuming data is a JSON string, parse it to a dictionary and add the timestamp
         data_dict = json.loads(data)
         data_dict["timestamp"] = f"{datetime.datetime.now().year}-{datetime.datetime.now().month:02d}-{datetime.datetime.now().day:02d} {datetime.datetime.now().hour:02d}:{datetime.datetime.now().minute:02d}:{datetime.datetime.now().second:02d}"
         return json.dumps(data_dict)
@@ -56,8 +85,23 @@ def append_timestamp(data): # this is in json format
         return None
 
 async def data_handler(data, current_size, max_size):
+    """
+    Handles the data by adding it to the batch and checking if the batch size exceeds the maximum size.
+    If the batch size exceeds the maximum size, it sends the batch to AWS.
+
+    Parameters:
+        data (str): The data to be handled.
+        current_size (int): The current size of the batch.
+        max_size (int): The maximum size of the batch.
+
+    Returns:
+        bool: True if the batch was sent successfully, False otherwise.
+    """
+
+    # Add data to batch
     addToBatch(data)
 
+    # Send batch if size exceeds max size
     if current_size >= max_size:
         if sendBatch():
             print("Batch sent successfully")
@@ -69,9 +113,18 @@ async def data_handler(data, current_size, max_size):
         return False
 
 async def anomaly_prediction_catchup(clf, max_size):
+    """
+    When network is restored, this function reads the entire batch file and checks for anomalies.
+    If an anomaly is detected, it sends the data to AWS.
+
+    Parameters:
+        clf (object): The anomaly detection model.
+        max_size (int): The maximum size of the batch.
+    """
+
     # Read the last 5 lines from the batch file
     with open('batch.txt', 'r') as batch_file:
-        lines = batch_file.readlines()[-5:]
+        lines = batch_file.readlines()[0:]
 
     # Process each line and check for anomalies
     for line in lines:
@@ -86,8 +139,12 @@ async def anomaly_prediction_catchup(clf, max_size):
 
 
 async def main():
+    """
+    Main function to handle the data stream from Arduino, check for anomalies, and send data to AWS.
+    """
+
     current_size = 0
-    max_size = 5
+    max_size = 144 # 12 hours of data at 5 min intervals
     outage = False
 
     # Download the model from S3
@@ -114,7 +171,8 @@ async def main():
                     print("Network restored.", flush=True)
                     await anomaly_prediction_catchup(clf, max_size)
                     outage = False
-                else:
+                else: # Cache data until network is restored
+                    print("Caching data until network is restored...", flush=True)
                     data = next(serial_data)
                     if data.startswith("{"):
                         data_with_timestamp = append_timestamp(data)
@@ -123,11 +181,13 @@ async def main():
                             current_size += 1
 
 
-        data = next(serial_data)
+        data = next(serial_data) # Read data from serial port
         if not (data.startswith("{")): # Arduino sends notifications, don't want to parse those lol
             continue
 
         data_with_timestamp = append_timestamp(data) # Arduino doesn't have RTC
+
+        # If there is data and it is a JSON string, process it
         if data_with_timestamp:
             if anomaly_prediction(data_with_timestamp, clf):
                 # Circumvent batcher, this is important because we need to send the data immediately
@@ -142,6 +202,6 @@ async def main():
                 else:
                     current_size += 1
 
-        await asyncio.sleep(10) # Eepy
+        await asyncio.sleep(300) # 5 min intervals
 
 asyncio.run(main())

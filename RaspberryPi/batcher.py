@@ -13,11 +13,25 @@ dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
 table = dynamodb.Table("cc-metropt3-prelearned")
 
 def addToBatch(JSONdata):
+    """
+    Adds the JSON data to a batch file for later processing.
+
+    Parameters:
+        JSONdata (str): The JSON data to be added to the batch file.
+    """
     with open('batch.txt', 'a') as batch_file:
         batch_file.write(JSONdata + "\n")
     print("Data added to batch:", JSONdata)
 
 def sendBatch():
+    """
+    Sends the batch file to AWS DynamoDB and clears the batch file.
+    If AWS is not reachable, it will return False.
+    
+    Returns:
+        bool: True if the batch was sent successfully, False if AWS is not reachable.
+    """
+
     batch_file = open('batch.txt', 'r')
 
     # Ping AWS

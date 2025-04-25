@@ -12,6 +12,16 @@ dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 schedule_table = dynamodb.Table('cc-metropt3-schedule')
 
 def data_cleaner(unclean_data):
+    """
+    Cleans the unclean data by extracting relevant fields and converting them to a numpy array.
+
+    Parameters:
+        unclean_data (str or dict): The unclean data to be cleaned. It can be a JSON string or a dictionary.
+
+    Returns:
+        np.ndarray: A numpy array containing the cleaned data.
+    """
+
     if isinstance(unclean_data, str):
         embedded_json = json.loads(unclean_data)
     else:
@@ -36,6 +46,14 @@ def data_cleaner(unclean_data):
     return clean_data
 
 def download_model_from_s3():
+    """
+    Downloads the anomaly detection model from S3.
+    If the model is not reachable, it will return False.
+
+    Returns:
+        clf (IsolationForest): The loaded anomaly detection model.
+        bool: False if the model is not reachable.
+    """
     s3_client = boto3.client('s3')
     cloud_bucket = 'cloud-conductors'
     model_filename = 'anomaly_prediction.pkl' # I'm PICKLE RICK
@@ -46,7 +64,6 @@ def download_model_from_s3():
     
     s3_client.download_file(cloud_bucket, model_filename, model_filename)
 
-
     # Load the model locally
     with open(model_filename, 'rb') as model_file:
         clf = pickle.load(model_file)
@@ -54,6 +71,17 @@ def download_model_from_s3():
 
 
 def anomaly_prediction(embedded_data, clf):
+    """
+    Predicts if the embedded data is an anomaly using the Isolation Forest model.
+    Updates the DynamoDB table if an anomaly is detected.
+
+    Parameters:
+        embedded_data (str or dict): The embedded data to be predicted. It can be a JSON string or a dictionary.
+        clf (IsolationForest): The trained anomaly detection model.
+
+    Returns:
+        bool: True if an anomaly is detected and the schedule is updated, False otherwise.
+    """
     # Cleaning data
     cleaned_data = data_cleaner(embedded_data).reshape(1, -1)
     print(cleaned_data, flush=True)
