@@ -9,7 +9,9 @@ from anomaly import anomaly_prediction, download_model_from_s3
 from batcher import addToBatch, sendBatch
 from network import ping_aws
 import pickle
+import os
 
+boto3.client('dynamodb', region_name=os.getenv("AWS_REGION"), aws_access_key_id=os.getenv("AWS_ACCESS_KEY"), aws_secret_access_key=os.getenv("AWS_SECRET_KEY"))
 serialPort = serial.Serial(port="COM3", baudrate=9600, timeout=0)
 
 class ReadLine:
