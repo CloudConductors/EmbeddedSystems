@@ -152,15 +152,17 @@ float generate_random_value(float mean, float stddev) {
     }
 }
 
-float calculate_probability(int day) {
+float calculate_probability(int iteration) {
     // This data is usually provided by the component manufacturer and is used to calculate the probability of failure... we don't have that.
-    int days_mean = 10;
-    int days_std = 1;
+    int iterations_mean = 864; // 864 iterations is 3 days of data (Data is generated every 5 minutes)
+    int iterations_std = 12; // 3 days +/- 1 hour.
 
-    float standardized_std = (day - days_mean) / days_std;
+    float standardized_std = (iteration - iterations_mean) / iterations_std;
     return phi(standardized_std / sqrt(2)) / 2;  // Cumulative distribution function for a normal distribution
 }
 
+// This function is used to clamp the towers value to 0 or 1.
+// If the value is less than 0.5, it will be clamped to 0. Otherwise, it will be clamped to 1.
 float clamp_towers(float towers) {
     if (towers < 0.5) {
         return 0.0;
@@ -185,24 +187,6 @@ void grab_random_good(Data *data) {
     data->pressure_switch = generate_random_value(pressure_switch_mean_good, pressure_switch_std_good);
     data->oil_level = generate_random_value(oil_level_mean_good, oil_level_std_good);
     data->caudal_impulses = generate_random_value(caudal_impulses_mean_good, caudal_impulses_std_good);
-}
-
-void grab_random_good2(Data *data) {
-    data->tp2 = generate_random_value(tp2_mean_good2, tp2_std_good2);
-    data->tp3 = generate_random_value(tp3_mean_good2, tp3_std_good2);
-    data->h1 = generate_random_value(h1_mean_good2, h1_std_good2);
-    data->dv_pressure = generate_random_value(dv_pressure_mean_good2, dv_pressure_std_good2);
-    data->resevoirs = generate_random_value(resevoirs_mean_good2, resevoirs_std_good2);
-    data->oil_temperature = generate_random_value(oil_temperature_mean_good2, oil_temperature_std_good2);
-    data->motor_current = generate_random_value(motor_current_mean_good2, motor_current_std_good2);
-    data->COMP = generate_random_value(comp_mean_good2, comp_std_good2);
-    data->dv_electric = generate_random_value(dv_electric_mean_good2, dv_electric_std_good2);
-    data->towers = clamp_towers(generate_random_value(towers_mean_good2, towers_std_good2));
-    data->mpg = generate_random_value(mpg_mean_good2, mpg_std_good2);
-    data->lps = generate_random_value(lps_mean_good2, lps_std_good2);
-    data->pressure_switch = generate_random_value(pressure_switch_mean_good2, pressure_switch_std_good2);
-    data->oil_level = generate_random_value(oil_level_mean_good2, oil_level_std_good2);
-    data->caudal_impulses = generate_random_value(caudal_impulses_mean_good2, caudal_impulses_std_good2);
 }
 
 void grab_random_bad(Data *data) {

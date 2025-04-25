@@ -3,7 +3,6 @@ import serial
 import asyncio
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
-import uuid
 import datetime
 import json
 from anomaly import anomaly_prediction, download_model_from_s3
