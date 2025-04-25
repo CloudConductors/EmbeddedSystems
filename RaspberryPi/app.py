@@ -125,6 +125,8 @@ async def anomaly_prediction_catchup(clf, max_size):
     with open('batch.txt', 'r') as batch_file:
         lines = batch_file.readlines()[0:]
 
+    print("Starting anomaly detection catchup...", flush=True)
+
     # Process each line and check for anomalies
     for line in lines:
         data = line.strip()
@@ -134,7 +136,7 @@ async def anomaly_prediction_catchup(clf, max_size):
                 if anomaly_prediction(data_with_timestamp, clf):
                     await data_handler(data_with_timestamp, max_size, max_size)
     
-    print("Anomaly prediction catchup completed.")
+    print("Anomaly detection catchup completed.\n", flush=True)
 
 
 async def main():
@@ -156,12 +158,12 @@ async def main():
             clf = pickle.load(file)
             file.close()
 
-            print("Prediction model loaded from local file.")
+            print("Prediction model loaded from local file.", flush=True)
         else:
-            print("Prediction model not found locally. Exiting...")
+            print("Prediction model not found locally. Exiting...", flush=True)
             return
     else:
-        print("Prediction model downloaded from AWS S3.")
+        print("Prediction model downloaded from AWS S3.", flush=True)
         
     # Main
     loop = asyncio.get_event_loop()
@@ -170,6 +172,7 @@ async def main():
         # Check network connection
         if not ping_aws():
             print("Network outage detected, waiting for recovery...", flush=True)
+            print("Caching data until network is restored...", flush=True)
             outage = True
             while outage:
                 if ping_aws():
@@ -177,13 +180,15 @@ async def main():
                     await anomaly_prediction_catchup(clf, max_size)
                     outage = False
                 else: # Cache data until network is restored
-                    print("Caching data until network is restored...", flush=True)
                     data = next(serial_data)
                     if data.startswith("{"):
+                        print("Data received.")
                         data_with_timestamp = append_timestamp(data)
+                        print(data_with_timestamp)
                         if data_with_timestamp:
                             await data_handler(data_with_timestamp, current_size, max_size)
                             current_size += 1
+                        print("\n")
 
 
         data = next(serial_data) # Read data from serial port
@@ -200,15 +205,16 @@ async def main():
                 # Circumvent batcher, this is important because we need to send the data immediately
                 current_size = max_size
                 await data_handler(data_with_timestamp, current_size, max_size) # doing it this way allows for network check
-                print("Anomaly detected, batch sent immediately.")
+                print("Anomaly detected, batch sent immediately.", flush=True)
                 current_size = 0
             else:
-                print(f"Current batch size: {current_size}.")
+                print(f"Current batch size: {current_size + 1}.", flush=True)
                 if await data_handler(data_with_timestamp, current_size, max_size):
                     current_size = 0
                 else:
                     current_size += 1
 
+        print("\n", flush=True)
         await asyncio.sleep(300) # 5 min intervals
 
 asyncio.run(main())

@@ -21,7 +21,7 @@ def addToBatch(JSONdata):
     """
     with open('batch.txt', 'a') as batch_file:
         batch_file.write(JSONdata + "\n")
-    print("Data added to batch.")
+    print("Data added to batch.", flush=True)
 
 def sendBatch():
     """
@@ -36,7 +36,7 @@ def sendBatch():
 
     # Ping AWS
     if not ping_aws():
-        print("AWS is not reachable. Exiting...")
+        print("AWS is not reachable. Exiting...", flush=True)
         return False
 
     # AWS batcher
@@ -54,5 +54,5 @@ def sendBatch():
     with open('batch.txt', 'w') as batch_file:
         batch_file.write("")  # Clear the batch file after sending
 
-    print("Batch sent to DynamoDB and file cleared.")
+    print("Batch sent to DynamoDB and file cleared.", flush=True)
     return True

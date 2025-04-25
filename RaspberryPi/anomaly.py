@@ -108,9 +108,8 @@ def anomaly_prediction(embedded_data, clf):
                     return False
 
                 # Check if item exists before inserting (in case you're replacing it)
-                print(Component_Id, flush=True)
                 existing_item = schedule_table.get_item(
-                    Key={'component_id': str(Component_Id), 'train_id': '1'} # this is a bodge, need a way to dynamically get the train_id
+                    Key={'component_id': str(Component_Id), 'train_id': '1'}
                 )
                 if 'Item' not in existing_item:
                     print("Item not found", flush=True)
