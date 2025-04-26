@@ -109,6 +109,11 @@ To maintain **data integrity** during network disruptions, a caching system was 
 
 ---
 
+## 📂 Other Repositories
+- [Main](https://github.com/ITSC-4155-002/Main)
+
+---
+
 ## 📚 References
 
 - Davari, N., Veloso, B., Ribeiro, R., & Gama, J. (2021). MetroPT-3 Dataset. UCI Machine Learning Repository. [https://doi.org/10.24432/C5VW3R](https://doi.org/10.24432/C5VW3R)
