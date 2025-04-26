@@ -113,7 +113,7 @@ async def data_handler(data, current_size, max_size):
     else:
         return False
 
-async def anomaly_prediction_catchup(clf, max_size):
+async def anomaly_prediction_catchup(clf, max_size, component_id, train_id):
     """
     When network is restored, this function reads the entire batch file and checks for anomalies.
     If an anomaly is detected, it sends the data to AWS.
@@ -135,7 +135,7 @@ async def anomaly_prediction_catchup(clf, max_size):
         if data.startswith("{"):
             data_with_timestamp = append_timestamp(data)
             if data_with_timestamp:
-                if anomaly_prediction(data_with_timestamp, clf):
+                if anomaly_prediction(data_with_timestamp, clf, component_id, train_id):
                     await data_handler(data_with_timestamp, max_size, max_size)
     
     print("Anomaly detection catchup completed.\n", flush=True)
@@ -203,7 +203,9 @@ async def main():
 
         # If there is data and it is a JSON string, process it
         if data_with_timestamp:
-            if anomaly_prediction(data_with_timestamp, clf):
+            component_id = json.loads(data_with_timestamp)["component_id"]
+            train_id = json.loads(data_with_timestamp)["train_id"]
+            if anomaly_prediction(data_with_timestamp, clf, component_id, train_id):
                 # Circumvent batcher, this is important because we need to send the data immediately
                 current_size = max_size
                 await data_handler(data_with_timestamp, current_size, max_size) # doing it this way allows for network check

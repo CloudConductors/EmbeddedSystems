@@ -6,7 +6,8 @@
 #include <Arduino.h>
 
 typedef struct {
-    int id;
+    int component_id;
+    int train_id;
     char timestamp[20];
     float tp2;
     float tp3;

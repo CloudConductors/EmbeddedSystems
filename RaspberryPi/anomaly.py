@@ -70,7 +70,7 @@ def download_model_from_s3():
         return clf
 
 
-def anomaly_prediction(embedded_data, clf):
+def anomaly_prediction(embedded_data, clf, component_id, train_id):
     """
     Predicts if the embedded data is an anomaly using the Isolation Forest model.
     Updates the DynamoDB table if an anomaly is detected.
@@ -91,9 +91,13 @@ def anomaly_prediction(embedded_data, clf):
     if result == -1:
         # Test if schedule exists
         try:
-                Component_Id = schedule_table.scan(
-                    FilterExpression=Attr('component_id').eq('1')
-                )
+            Component_Id = schedule_table.scan(
+                FilterExpression=Attr('component_id').eq(str(component_id))
+            )
+
+            Train_Id = schedule_table.scan(
+                FilterExpression=Attr('train_id').eq(str(train_id))
+            )
         except ClientError as e:
             print("Error scanning table:", e.response['Error']['Message'], flush=True)
             return False
@@ -101,39 +105,27 @@ def anomaly_prediction(embedded_data, clf):
         # Update Schedule
         if 'Items' in Component_Id and len(Component_Id['Items']) > 0:
             try:
-                if 'Items' in Component_Id and len(Component_Id['Items']) > 0:
-                    Component_Id = Component_Id['Items'][0]['component_id']
-                else:
-                    print("Invalid component ID", flush=True)
-                    return False
-
                 # Check if item exists before inserting (in case you're replacing it)
                 existing_item = schedule_table.get_item(
-                    Key={'component_id': str(Component_Id), 'train_id': '1'}
+                    Key={'component_id': str(component_id), 'train_id': str(train_id)},
                 )
                 if 'Item' not in existing_item:
-                    print("Item not found", flush=True)
+                    print("Item not in schedule table.", flush=True)
                     return False
-                
 
                 # Grabbing current time for update
                 current_time = datetime.now().strftime('%m/%d/%Y')
 
                 # Perform put_item (replaces the existing item with new values)
-
-                maintenance = schedule_table.put_item(
-                    Item={
-                        'component_id': str(Component_Id),
-                        'train_id': '1',
-                        'component_failure' : 'true',
-                        'Expected_Repair_DUF': str(current_time),
-                        'Last_Repair_Date': '01/01/2001',
-                        'Maintenance_Scheduled': 'true',
-                        'Manually_Overriden': 'true',
-                        'Mean_DUF': 3,
-                        'Standard_Deviation_DUF': 12,
-                        
-                    }
+                schedule_table.update_item(
+                    Key={'component_id': str(component_id), 'train_id': str(train_id)},
+                    UpdateExpression="SET component_failure = :val1, manually_overridden = :val2, expected_repair_date = :val3, maintenance_scheduled = :val4",
+                    ExpressionAttributeValues={
+                        ':val1': True,
+                        ':val2': True,
+                        ':val3': current_time,
+                        ':val4': True,
+                    },
                 )
                 
                 print("Anomaly detected!", flush=True)
