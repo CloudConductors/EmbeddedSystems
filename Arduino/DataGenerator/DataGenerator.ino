@@ -1,6 +1,6 @@
 #include "DataManager.h"
 
-int component_id = 1; // ID of the "component"
+int component_id = 783; // ID of the "component"
 int train_id = 1;
 int iteration = 0;
 bool broken = false; // If component is broken, it won't be magically fixed.
