@@ -7,6 +7,8 @@ To upload and run the code for the Arduino, you'll need the [**Arduino IDE**](ht
 
 ## 🐍 Running Code for Raspberry Pi
 
+**You will need the provided .env file to run this. Place this file in the RaspberryPi sub-directory.**
+
 1. 📥 **Clone the repository**  
    ```bash
    git clone https://github.com/ITSC-4155-002/EmbeddedSystems.git
