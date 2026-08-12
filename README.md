@@ -13,7 +13,6 @@ This embedded systems component focuses on the **generation, collection, process
 
 Due to the hardware-specific nature of this project, not all software can be run locally. Features like **serial communication** are tightly coupled with the Arduino microcontroller and are not easily emulated.
 
-This README outlines the key components and logic behind the embedded systems portion.
 
 ---
 
